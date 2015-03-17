@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import math
 import time
 
+#new comment
+
 
 
 ti=time.time()
@@ -96,22 +98,6 @@ w4= (1.0/error4)/W
 w5= (1.0/error5)/W
 w6= (1.0/error6)/W
 
-print (error1)
-print (error2)
-print (error3)
-print (error4)
-print (error5)
-print (error6)
-
-print W
-print w1
-print w2
-print w3
-print w4
-print w5
-print w6
-
-print w1+w2+w3+w4+w5+w6
 
 Eout=[]
 for i in xrange(int ( float(2)/0.002  )):
