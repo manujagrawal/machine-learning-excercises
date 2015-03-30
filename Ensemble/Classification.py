@@ -14,11 +14,182 @@ from pybrain.tools.shortcuts     import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.structure.modules   import SoftmaxLayer
 
-
-
 data=[]
 target=[]
 
+with open('train.csv') as csvfile:
+		reader=csv.reader(csvfile,delimiter=',')
+		reader.next()
+		for row in reader:
+			data.append([ float(i.replace(',','')) for i in row[1:] ] )
+			target.append(float(row[0]))
+
+
+data=np.array(data)
+target=np.array(target)
+data = scale(data)
+raw_data=np.concatenate((target.reshape(target.shape[0],1),data),axis=1)
+
+n_samples, n_features = data.shape
+n_targets = 2
+
+print "data loaded"
+
+
+# make clusters -----------
+    
+kmeans=KMeans(init='k-means++', n_clusters=n_samples/20, n_init=10)
+kmeans.fit(data)
+centroids = kmeans.cluster_centers_
+
+clusters=[]
+
+for i in xrange(224):
+	cluster=[]
+	clusters.append(cluster) 
+
+for row in raw_data:
+	for i in  kmeans.predict(row[1:]):
+		clusters[i].append(row)
+
+# ---------
+
+print "clusters made"
+
+
+size=len(data)
+
+# convert complete dataset to compatible pybrain data set
+
+randIndex = random.sample(xrange(size), int(size*0.65))
+trdt=raw_data[randIndex]
+tstdt=raw_data[randIndex]
+
+randIndex1 = random.sample(xrange(size), int(size*0.50))
+randIndex2 = random.sample(xrange(size), int(size*0.50))
+randIndex3 = random.sample(xrange(size), int(size*0.50))
+randIndex4 = random.sample(xrange(size), int(size*0.50))
+randIndex5 = random.sample(xrange(size), int(size*0.50))
+
+trdt1=raw_data[randIndex1]
+trdt2=raw_data[randIndex2]
+trdt3=raw_data[randIndex3]
+trdt4=raw_data[randIndex4]
+trdt5=raw_data[randIndex5]
+
+trdata = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt)):
+	trdata.addSample(trdt[i][1:], [trdt[i][0]])
+trdata._convertToOneOfMany(bounds=[0, 1])                  #---
+
+
+tstdata = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(tstdt)):
+	tstdata.addSample(tstdt[i][1:], [tstdt[i][0]])
+tstdata._convertToOneOfMany(bounds=[0, 1])                   #---
+
+trdata1 = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt1)):
+	trdata1.addSample(trdt1[i][1:], [trdt1[i][0]])
+trdata1._convertToOneOfMany(bounds=[0, 1])                      #---
+
+trdata2 = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt2)):
+	trdata2.addSample(trdt2[i][1:], [trdt2[i][0]])
+trdata2._convertToOneOfMany(bounds=[0, 1])                      #---
+
+trdata3 = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt3)):
+	trdata3.addSample(trdt3[i][1:], [trdt3[i][0]])
+trdata3._convertToOneOfMany(bounds=[0, 1])                      #---
+
+trdata4 = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt4)):
+	trdata4.addSample(trdt4[i][1:], [trdt4[i][0]])
+trdata4._convertToOneOfMany(bounds=[0, 1])                      #---
+
+trdata5 = ClassificationDataSet(14,2, nb_classes=2)
+for i in xrange(len(trdt5)):
+	trdata5.addSample(trdt5[i][1:], [trdt5[i][0]])
+trdata5._convertToOneOfMany(bounds=[0, 1])                      #---
+
+#---------------------------------
+print "compatible data set made "
+
+
+# convert cluster data set to compatible pybrain data set
+compatible_clusters=[]
+
+for cluster in clusters:
+	ds = ClassificationDataSet(14,2, nb_classes=2)
+	for i in xrange(len(cluster)):
+		a=cluster[i][1:]
+		b=[cluster[i][0]]
+		ds.appendLinked(a,b)
+	ds._convertToOneOfMany(bounds=[0, 1])
+
+	compatible_clusters.append(ds)
+#-------------------
+
+print "compatible clusters made"
+
+# make feed forward neural networks----
+fnn1 = buildNetwork( trdata1.indim, 7 , trdata1.outdim, outclass=SoftmaxLayer )
+trainer1 = BackpropTrainer( fnn1, dataset=trdata1, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01) 
+
+
+fnn2 = buildNetwork( trdata2.indim, 7 , trdata2.outdim, outclass=SoftmaxLayer )
+trainer2 = BackpropTrainer( fnn2, dataset=trdata2, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+
+
+fnn3 = buildNetwork( trdata3.indim, 7 , trdata3.outdim, outclass=SoftmaxLayer )
+trainer3 = BackpropTrainer( fnn3, dataset=trdata3, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+
+
+fnn4 = buildNetwork( trdata4.indim, 7 , trdata4.outdim, outclass=SoftmaxLayer )
+trainer4 = BackpropTrainer( fnn4, dataset=trdata4, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+
+
+fnn5 = buildNetwork( trdata5.indim, 7 , trdata5.outdim, outclass=SoftmaxLayer )
+trainer5 = BackpropTrainer( fnn5, dataset=trdata5, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+
+#-----
+
+print "neural networks made"
+
+
+# train networks-----
+
+print "training network 1------------------------------------"
+trainer1.trainEpochs (50)
+
+print "training network 2------------------------------------"
+trainer2.trainEpochs (50)
+
+
+print "training network 3------------------------------------"
+trainer3.trainEpochs (50)
+
+
+print "training network 4------------------------------------"
+trainer4.trainEpochs (50)
+
+
+print "training network 5------------------------------------"
+trainer5.trainEpochs (50)
+#-----------
+
+
+
+
+
+
+"""
+with open('test.csv') as csvfile:
+		reader=csv.reader(csvfile,delimiter=',')
+		reader.next()
+		for row in reader:
+			print kmeans.predict([ float(i.replace(',','')) for i in row ])
 
 def makeNN():
 
@@ -45,152 +216,8 @@ def makeNN():
     n1.sortModules()
 
     return (n1)
-
-
-with open('train.csv') as csvfile:
-		reader=csv.reader(csvfile,delimiter=',')
-		reader.next()
-		for row in reader:
-			data.append([ float(i.replace(',','')) for i in row[1:] ] )
-			target.append(float(row[0]))
-
-
-data=np.array(data)
-target=np.array(target)
-#data = scale(data)
-
-raw_data=np.concatenate((target.reshape(target.shape[0],1),data),axis=1)
-
-print data.shape
-print target.shape
-print raw_data.shape
-
-n_samples, n_features = data.shape
-n_targets = 2
-
-# make clusters -----------
-    
-kmeans=KMeans(init='k-means++', n_clusters=n_samples/20, n_init=10)
-kmeans.fit(data)
-centroids = kmeans.cluster_centers_
-
-print centroids.shape
-
-clusters=[]
-
-for i in xrange(224):
-	cluster=[]
-	clusters.append(cluster) 
-
-for row in raw_data:
-	for i in  kmeans.predict(row[1:]):
-		clusters[i].append(row)
-
-# clusters made -----------
-
 """
-with open('test.csv') as csvfile:
-		reader=csv.reader(csvfile,delimiter=',')
-		reader.next()
-		for row in reader:
-			print kmeans.predict([ float(i.replace(',','')) for i in row ])
-
-"""			
-"""
-inLayer=[ 	[ data[:,0].min(),data[:,0].max() ],
-			[ data[:,1].min(),data[:,1].max() ],
-			[ data[:,2].min(),data[:,2].max() ],
-			[ data[:,3].min(),data[:,3].max() ],
-			[ data[:,4].min(),data[:,4].max() ],
-			[ data[:,5].min(),data[:,5].max() ],
-			[ data[:,6].min(),data[:,6].max() ],
-			[ data[:,7].min(),data[:,7].max() ],
-			[ data[:,8].min(),data[:,8].max() ],
-			[ data[:,9].min(),data[:,9].max() ],
-			[ data[:,10].min(),data[:,10].max() ],
-			[ data[:,11].min(),data[:,11].max() ],
-			[ data[:,12].min(),data[:,12].max() ],
-			[ data[:,13].min(),data[:,13].max() ] ]   
-
-outLayer=[14, 2]
-"""
-size=len(data)
-tratio=0.6
-
-modified_target=[]
-
-for row in target:
-	newrow=[0,0]
-	newrow[int(row)]=1
-	modified_target.append(newrow)
-
-modified_target=np.array(modified_target)
-
-DS = ClassificationDataSet(14, nb_classes=2)
-
-for i in xrange(len(raw_data)):
-	DS.appendLinked(raw_data[i][1:], [raw_data[i][0]])
-
-DS._convertToOneOfMany(bounds=[0, 1])
-
-fnn = buildNetwork( DS.indim, 7 , DS.outdim, outclass=SoftmaxLayer )
-trainer = BackpropTrainer( fnn, dataset=DS, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01) 
-
-print 'training started'
-
-trainer.trainEpochs (50)
-
-
-#print "training started "
-
-""""
-nn=makeNN()
-nn.activate((data[0]))
-trainer1 = BackpropTrainer(nn, dataset=train1, momentum=0.1, verbose=True, weightdecay=0.001)
-"""
-#randIndex= random.sample(xrange(size), int(size*tratio))
-#net = nl.net.newff(inLayer,outLayer)
-#error = net.train(data[randIndex], modified_target[randIndex], epochs=600, show=1, goal=0.02)
 
 
 
-
-#print "training completed"
-
-#print error 
-
-
-
-
-
-
-
-
-
-"""
-def trainNN ():
-    randIndex= random.sample(xrange(size), int(size*tratio))
-    net = nl.net.newff(inLayer,outLayer)
-    error = net.train(data[randIndex], modified_target[randIndex], epochs=600, show=1, goal=0.02)
-
-    out = net.sim(inp)
-    fout= net.sim(X)
-    error=np.array(error)
-
-    myarray= np.array( np.array(fout[:,0])-np.array(Y[:,0]) )
-    msqerror=[]
-
-    for a in myarray:
-        #b=math.pow(a, 2)
-        b=abs(a)
-
-        msqerror.append(b)
-    msqerror=np.array(msqerror)
-    #msqerror=[math.pow(a, 2) for a in (myarray)]
-    #msqerror=np.array(error)
-    #msqerror.ravel()
-
-    return (net,inp,tar,out,fout,msqerror,error.min())
-
-"""
 
