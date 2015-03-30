@@ -10,41 +10,38 @@ import math
 import matplotlib.pyplot as plt
 from sklearn.cross_validation import StratifiedKFold
 
+
+
+
 t1=time.time()
 
 def makeNN():
 
     n1=FeedForwardNetwork()
 
-    inLayer=SigmoidLayer(1)
-    h1=SigmoidLayer(20)
-    h2=SigmoidLayer(20)
-    h3=SigmoidLayer(20)
-    h4=SigmoidLayer(20)
-    outLayer=LinearLayer(1)
+    inLayer=SigmoidLayer(14)
+    h1=SigmoidLayer(14)
+    h2=SigmoidLayer(14)
+    outLayer=LinearLayer(2)
 
     n1.addInputModule(inLayer)
     n1.addModule(h1)
     n1.addModule(h2)
-    n1.addModule(h3)
-    n1.addModule(h4)
     n1.addOutputModule(outLayer)
 
     in_h1=FullConnection(inLayer,h1)
     h1_h2=FullConnection(h1,h2)
-    h2_h3=FullConnection(h2,h3)
-    h3_h4=FullConnection(h3,h4)
-    h4_out=FullConnection(h4,outLayer)
+    h2_out=FullConnection(h2,outLayer)
 
     n1.addConnection(in_h1)
     n1.addConnection(h1_h2)
-    n1.addConnection(h2_h3)
-    n1.addConnection(h3_h4)
-    n1.addConnection(h4_out)
+    n1.addConnection(h2_out)
 
     n1.sortModules()
 
     return deepcopy(n1)
+
+
 def makeNNlist(num):
 
     nnList=[]
