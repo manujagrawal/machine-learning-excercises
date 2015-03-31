@@ -232,7 +232,7 @@ def cal_ensemble_error(raw_data,num_clusters,tr_ratio,epochs):
 
 	my_raw_data=raw_data
 	
-	kmeans,compatible_clusters,train_data,tst_data,est1,est2,est3,est4,est5,weights,insample_error,outsample_error = makeEnsembles(raw_data=my_raw_data, num_clusters= num_clusters, tr_ratio=tr_ratio, nn_ratio=0.45 ,n_epochs=epochs)
+	kmeans,compatible_clusters,train_data,tst_data,est1,est2,est3,est4,est5,weights,insample_error,outsample_error = makeEnsembles(raw_data=my_raw_data, num_clusters= num_clusters, tr_ratio=tr_ratio, nn_ratio=0.30 ,n_epochs=epochs)
 
 	tr_out=[]
 	tst_out=[]
