@@ -15,35 +15,6 @@ from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.structure.modules   import SoftmaxLayer
 from sklearn.datasets import make_blobs
 
-"""
-data=[]
-target=[]
-
-with open('train.csv') as csvfile:
-		reader=csv.reader(csvfile,delimiter=',')
-		reader.next()
-		for row in reader:
-			data.append([ float(i.replace(',','')) for i in row[1:] ] )
-			target.append(float(row[0]))
-
-
-data=np.array(data)
-target=np.array(target)
-
-data2=[]
-for row in data:
-	e1=row[0]-row[7]
-	e2=row[1]-row[8]
-	e3=row[2]-row[9]
-	e4=row[3]-row[10]
-	e5=row[4]-row[11]
-	e6=row[5]-row[12]
-	e7=row[6]-row[13]
-	data2.append([e1,e2,e3,e4,e5,e6,e7])
-data2=np.array(data2)
-
-"""
-
 data2,target=make_blobs(n_samples=4500,n_features=7,centers=4,shuffle=True,cluster_std=5.0)
 
 data2=np.array(data2)
