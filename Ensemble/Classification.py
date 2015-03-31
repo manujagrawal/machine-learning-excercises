@@ -27,7 +27,7 @@ with open('train.csv') as csvfile:
 
 data=np.array(data)
 target=np.array(target)
-data = scale(data)
+#data = scale(data)
 raw_data=np.concatenate((target.reshape(target.shape[0],1),data),axis=1)
 
 n_samples, n_features = data.shape
@@ -38,13 +38,15 @@ print "data loaded"
 
 # make clusters -----------
     
-kmeans=KMeans(init='k-means++', n_clusters=n_samples/20, n_init=10)
+kmeans=KMeans(init='k-means++', n_clusters=n_samples/10, n_init=20)
 kmeans.fit(data)
 centroids = kmeans.cluster_centers_
 
+print "number of clusters=", len(centroids)
+
 clusters=[]
 
-for i in xrange(224):
+for i in xrange(len(centroids)):
 	cluster=[]
 	clusters.append(cluster) 
 
@@ -65,11 +67,11 @@ randIndex = random.sample(xrange(size), int(size*0.65))
 trdt=raw_data[randIndex]
 tstdt=raw_data[randIndex]
 
-randIndex1 = random.sample(xrange(size), int(size*0.50))
-randIndex2 = random.sample(xrange(size), int(size*0.50))
-randIndex3 = random.sample(xrange(size), int(size*0.50))
-randIndex4 = random.sample(xrange(size), int(size*0.50))
-randIndex5 = random.sample(xrange(size), int(size*0.50))
+randIndex1 = random.sample(xrange(size), int(size*0.20))
+randIndex2 = random.sample(xrange(size), int(size*0.20))
+randIndex3 = random.sample(xrange(size), int(size*0.20))
+randIndex4 = random.sample(xrange(size), int(size*0.20))
+randIndex5 = random.sample(xrange(size), int(size*0.20))
 
 trdt1=raw_data[randIndex1]
 trdt2=raw_data[randIndex2]
@@ -77,38 +79,38 @@ trdt3=raw_data[randIndex3]
 trdt4=raw_data[randIndex4]
 trdt5=raw_data[randIndex5]
 
-trdata = ClassificationDataSet(14,2, nb_classes=2)
+trdata = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt)):
 	trdata.addSample(trdt[i][1:], [trdt[i][0]])
 trdata._convertToOneOfMany(bounds=[0, 1])                  #---
 
 
-tstdata = ClassificationDataSet(14,2, nb_classes=2)
+tstdata = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(tstdt)):
 	tstdata.addSample(tstdt[i][1:], [tstdt[i][0]])
 tstdata._convertToOneOfMany(bounds=[0, 1])                   #---
 
-trdata1 = ClassificationDataSet(14,2, nb_classes=2)
+trdata1 = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt1)):
 	trdata1.addSample(trdt1[i][1:], [trdt1[i][0]])
 trdata1._convertToOneOfMany(bounds=[0, 1])                      #---
 
-trdata2 = ClassificationDataSet(14,2, nb_classes=2)
+trdata2 = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt2)):
 	trdata2.addSample(trdt2[i][1:], [trdt2[i][0]])
 trdata2._convertToOneOfMany(bounds=[0, 1])                      #---
 
-trdata3 = ClassificationDataSet(14,2, nb_classes=2)
+trdata3 = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt3)):
 	trdata3.addSample(trdt3[i][1:], [trdt3[i][0]])
 trdata3._convertToOneOfMany(bounds=[0, 1])                      #---
 
-trdata4 = ClassificationDataSet(14,2, nb_classes=2)
+trdata4 = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt4)):
 	trdata4.addSample(trdt4[i][1:], [trdt4[i][0]])
 trdata4._convertToOneOfMany(bounds=[0, 1])                      #---
 
-trdata5 = ClassificationDataSet(14,2, nb_classes=2)
+trdata5 = ClassificationDataSet(14,1, nb_classes=2)
 for i in xrange(len(trdt5)):
 	trdata5.addSample(trdt5[i][1:], [trdt5[i][0]])
 trdata5._convertToOneOfMany(bounds=[0, 1])                      #---
@@ -121,7 +123,7 @@ print "compatible data set made "
 compatible_clusters=[]
 
 for cluster in clusters:
-	ds = ClassificationDataSet(14,2, nb_classes=2)
+	ds = ClassificationDataSet(14,1, nb_classes=2)
 	for i in xrange(len(cluster)):
 		a=cluster[i][1:]
 		b=[cluster[i][0]]
@@ -134,24 +136,25 @@ for cluster in clusters:
 print "compatible clusters made"
 
 # make feed forward neural networks----
-fnn1 = buildNetwork( trdata1.indim, 7 , trdata1.outdim, outclass=SoftmaxLayer )
+fnn1 = buildNetwork( trdata1.indim, 14 , trdata1.outdim, outclass=SoftmaxLayer )
 trainer1 = BackpropTrainer( fnn1, dataset=trdata1, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01) 
+print trdata1.calculateStatistics()
 
-
-fnn2 = buildNetwork( trdata2.indim, 7 , trdata2.outdim, outclass=SoftmaxLayer )
+fnn2 = buildNetwork( trdata2.indim, 14 , trdata2.outdim, outclass=SoftmaxLayer )
 trainer2 = BackpropTrainer( fnn2, dataset=trdata2, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+print trdata2.calculateStatistics()
 
-
-fnn3 = buildNetwork( trdata3.indim, 7 , trdata3.outdim, outclass=SoftmaxLayer )
+fnn3 = buildNetwork( trdata3.indim, 14 , trdata3.outdim, outclass=SoftmaxLayer )
 trainer3 = BackpropTrainer( fnn3, dataset=trdata3, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+print trdata3.calculateStatistics()
 
-
-fnn4 = buildNetwork( trdata4.indim, 7 , trdata4.outdim, outclass=SoftmaxLayer )
+fnn4 = buildNetwork( trdata4.indim, 14 , trdata4.outdim, outclass=SoftmaxLayer )
 trainer4 = BackpropTrainer( fnn4, dataset=trdata4, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+print trdata4.calculateStatistics()
 
-
-fnn5 = buildNetwork( trdata5.indim, 7 , trdata5.outdim, outclass=SoftmaxLayer )
+fnn5 = buildNetwork( trdata5.indim, 14 , trdata5.outdim, outclass=SoftmaxLayer )
 trainer5 = BackpropTrainer( fnn5, dataset=trdata5, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+print trdata5.calculateStatistics()
 
 #-----
 
@@ -161,30 +164,88 @@ print "neural networks made"
 # train networks-----
 
 print "training network 1------------------------------------"
-trainer1.trainEpochs (50)
+trainer1.trainEpochs (2)
 
 print "training network 2------------------------------------"
-trainer2.trainEpochs (50)
+trainer2.trainEpochs (2)
 
 
 print "training network 3------------------------------------"
-trainer3.trainEpochs (50)
+trainer3.trainEpochs (2)
 
 
 print "training network 4------------------------------------"
-trainer4.trainEpochs (50)
+trainer4.trainEpochs (2)
 
 
 print "training network 5------------------------------------"
-trainer5.trainEpochs (50)
+trainer5.trainEpochs (2)
 #-----------
 
 
+print "error1= ", percentError( trainer1.testOnClassData (dataset=tstdata ), tstdata['class'] )
+print "error2= ", percentError( trainer2.testOnClassData (dataset=tstdata ), tstdata['class'] )
+print "error3= ", percentError( trainer3.testOnClassData (dataset=tstdata ), tstdata['class'] )
+print "error4= ", percentError( trainer4.testOnClassData (dataset=tstdata ), tstdata['class'] )
+print "error5= ", percentError( trainer5.testOnClassData (dataset=tstdata ), tstdata['class'] )
 
+error1=[]
+for ds in compatible_clusters:
+	error1.append( percentError( trainer1.testOnClassData (dataset=ds ), tstdata['class'] ) ) 
+
+
+error2=[]
+for ds in compatible_clusters:
+	error2.append( percentError( trainer2.testOnClassData (dataset=ds ), tstdata['class'] ) )
+
+
+error3=[]
+for ds in compatible_clusters:
+	error3.append( percentError( trainer3.testOnClassData (dataset=ds ), tstdata['class'] ) )	
+
+
+error4=[]
+for ds in compatible_clusters:
+	error4.append( percentError( trainer4.testOnClassData (dataset=ds ), tstdata['class'] ) )
+
+
+error5=[]
+for ds in compatible_clusters:
+	error5.append( percentError( trainer5.testOnClassData (dataset=ds ), tstdata['class'] ) )
+
+error1=np.array(error1)
+error2=np.array(error2)
+error3=np.array(error3)
+error4=np.array(error4)
+error5=np.array(error5)
+
+error=np.c_[error1,error2,error3,error4,error5]
+
+for i in xrange(len(compatible_clusters)):
+	print np.array(fnn1.activateOnDataset(compatible_clusters[i]).argmax(axis=1) )
+	print np.array(fnn2.activateOnDataset(compatible_clusters[i]).argmax(axis=1) )
+	print np.array(fnn3.activateOnDataset(compatible_clusters[i]).argmax(axis=1) )
+	print np.array(fnn4.activateOnDataset(compatible_clusters[i]).argmax(axis=1) )
+	print np.array(fnn5.activateOnDataset(compatible_clusters[i]).argmax(axis=1) )
+	print 6*'-'
+	print np.array(compatible_clusters[i]['target'].argmax(axis=1))
+	print 76*'-'
+
+
+
+#for row in error:
+#	print row
 
 
 
 """
+out1 = fnn1.activateOnDataset(tstdata)
+
+print out1
+print tstdata['target']
+
+
+
 with open('test.csv') as csvfile:
 		reader=csv.reader(csvfile,delimiter=',')
 		reader.next()
