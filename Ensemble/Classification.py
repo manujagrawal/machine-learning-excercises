@@ -16,238 +16,252 @@ from pybrain.structure.modules   import SoftmaxLayer
 from sklearn.datasets import make_blobs
 
 data2,target=make_blobs(n_samples=4500,n_features=7,centers=4,shuffle=True,cluster_std=5.0)
-
 data2=np.array(data2)
 target=np.array(target)
-
-print target
-
-#data = scale(data)
-raw_data=np.concatenate((target.reshape(target.shape[0],1),data2),axis=1)
-
-
-#print data.shape
-print data2.shape
-print target.shape
-print raw_data.shape
-
+my_raw_data=np.concatenate((target.reshape(target.shape[0],1),data2),axis=1)
 print "data loaded"
 
 
 # make clusters -----------
-    
-kmeans=KMeans(init='k-means++', n_clusters=len(data2)/10, n_init=20)
-kmeans.fit(data2)
-centroids = kmeans.cluster_centers_
+def makeEnsembles(raw_data,num_clusters,tr_ratio,nn_ratio,n_epochs=3):
 
-print "number of clusters=", len(centroids)
+	print "function called"
 
-clusters=[]
-
-for i in xrange(len(centroids)):
-	cluster=[]
-	clusters.append(cluster) 
-
-for row in raw_data:
-	for i in  kmeans.predict(row[1:]):
-		clusters[i].append(row)
-
-# ---------
-
-print "clusters made"
-
-
-size=len(data2)
-
-# convert complete dataset to compatible pybrain data set
-
-randIndex = random.sample(xrange(size), int(size*0.30))
-trdt=raw_data[randIndex]
-print len(trdt)
-randIndex = random.sample(xrange(size), int(size*0.70))
-tstdt=raw_data[randIndex]
-print len(tstdt)
-
-randIndex1 = random.sample(xrange(len(trdt)), int(size*0.10))
-randIndex2 = random.sample(xrange(len(trdt)), int(size*0.10))
-randIndex3 = random.sample(xrange(len(trdt)), int(size*0.10))
-randIndex4 = random.sample(xrange(len(trdt)), int(size*0.10))
-randIndex5 = random.sample(xrange(len(trdt)), int(size*0.10))
-
-trdt1=trdt[randIndex1]
-trdt2=trdt[randIndex2]
-trdt3=trdt[randIndex3]
-trdt4=trdt[randIndex4]
-trdt5=trdt[randIndex5]
-
-trdata = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt)):
-	trdata.addSample(trdt[i][1:], [trdt[i][0]])
-trdata._convertToOneOfMany(bounds=[0, 1])                  #---
-
-
-tstdata = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(tstdt)):
-	tstdata.addSample(tstdt[i][1:], [tstdt[i][0]])
-tstdata._convertToOneOfMany(bounds=[0, 1])                   #---
-
-trdata1 = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt1)):
-	trdata1.addSample(trdt1[i][1:], [trdt1[i][0]])
-trdata1._convertToOneOfMany(bounds=[0, 1])                      #---
-
-trdata2 = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt2)):
-	trdata2.addSample(trdt2[i][1:], [trdt2[i][0]])
-trdata2._convertToOneOfMany(bounds=[0, 1])                      #---
-
-trdata3 = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt3)):
-	trdata3.addSample(trdt3[i][1:], [trdt3[i][0]])
-trdata3._convertToOneOfMany(bounds=[0, 1])                      #---
-
-trdata4 = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt4)):
-	trdata4.addSample(trdt4[i][1:], [trdt4[i][0]])
-trdata4._convertToOneOfMany(bounds=[0, 1])                      #---
-
-trdata5 = ClassificationDataSet(7,1, nb_classes=4)
-for i in xrange(len(trdt5)):
-	trdata5.addSample(trdt5[i][1:], [trdt5[i][0]])
-trdata5._convertToOneOfMany(bounds=[0, 1])                      #---
-
-#---------------------------------
-print "compatible data set made "
-
-
-# convert cluster data set to compatible pybrain data set
-compatible_clusters=[]
-
-for cluster in clusters:
-	ds = ClassificationDataSet(7,1, nb_classes=4)
-	for i in xrange(len(cluster)):
-		a=cluster[i][1:]
-		b=[cluster[i][0]]
-		ds.appendLinked(a,b)
-	ds._convertToOneOfMany(bounds=[0, 1])
-
-	compatible_clusters.append(ds)
-#-------------------
-
-print "compatible clusters made"
-
-# make feed forward neural networks----
- 
-
-fnn1 = buildNetwork( trdata1.indim, 5 , trdata1.outdim, outclass=SoftmaxLayer )
-trainer1 = BackpropTrainer( fnn1, dataset=trdata1, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01) 
-print trdata1.calculateStatistics()
-
-fnn2 = buildNetwork( trdata2.indim, 2 , trdata2.outdim, outclass=SoftmaxLayer )
-trainer2 = BackpropTrainer( fnn2, dataset=trdata2, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
-print trdata2.calculateStatistics()
-
-fnn3 = buildNetwork( trdata3.indim, 4 , trdata3.outdim, outclass=SoftmaxLayer )
-trainer3 = BackpropTrainer( fnn3, dataset=trdata3, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
-print trdata3.calculateStatistics()
-
-fnn4 = buildNetwork( trdata4.indim, 4 , trdata4.outdim, outclass=SoftmaxLayer )
-trainer4 = BackpropTrainer( fnn4, dataset=trdata4, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
-print trdata4.calculateStatistics()
-
-fnn5 = buildNetwork( trdata5.indim, 10 , trdata5.outdim, outclass=SoftmaxLayer )
-trainer5 = BackpropTrainer( fnn5, dataset=trdata5, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
-print trdata5.calculateStatistics()
-
-#-----
-
-print "neural networks made"
-
-
-# train networks-----
-
-for i,trainer in enumerate((trainer1,trainer2,trainer3,trainer4,trainer5)):
+	kmeans=KMeans(init='k-means++', n_clusters=num_clusters, n_init=20)
+	kmeans.fit(raw_data[:,1:])
+	centroids = kmeans.cluster_centers_
 	
-	print "training network ", i, " ------------------------------------"
-	trainer.trainEpochs (2)
+	print "number of clusters=", len(centroids)
 
-#-----------
+	clusters=[]
 
-error1=[]
-error2=[]
-error3=[]
-error4=[]
-error5=[]
+	for i in xrange(len(centroids)):
+		cluster=[]
+		clusters.append(cluster) 
 
-for error,fnn in [ [error1,fnn1],[error2,fnn2],[error3,fnn3],[error4,fnn4],[error5,fnn5]]:
-	for ds in compatible_clusters:
-		out1 = np.array( fnn.activateOnDataset(ds).argmax(axis=1) ) 
-		out = np.array(  ds['target'].argmax(axis=1))
+	for row in raw_data:
+		for i in  kmeans.predict(row[1:]):
+			clusters[i].append(row)
+
+	# ---------
+
+	print "clusters made"
+
+
+	size=len(raw_data)
+
+	# convert complete dataset to compatible pybrain data set
+
+	randIndex = random.sample(xrange(size), int(size*tr_ratio))
+	trdt=raw_data[randIndex]
+	print len(trdt)
+	randIndex = random.sample(xrange(size), int(size*(1-tr_ratio)  ))
+	tstdt=raw_data[randIndex]
+	print len(tstdt)
+
+	randIndex1 = random.sample(xrange(len(trdt)), int(size*0.10))
+	randIndex2 = random.sample(xrange(len(trdt)), int(size*0.10))
+	randIndex3 = random.sample(xrange(len(trdt)), int(size*0.10))
+	randIndex4 = random.sample(xrange(len(trdt)), int(size*0.10))
+	randIndex5 = random.sample(xrange(len(trdt)), int(size*0.10))
+
+	trdt1=trdt[randIndex1]
+	trdt2=trdt[randIndex2]
+	trdt3=trdt[randIndex3]
+	trdt4=trdt[randIndex4]
+	trdt5=trdt[randIndex5]
+
+	trdata = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt)):
+		trdata.addSample(trdt[i][1:], [trdt[i][0]])
+	trdata._convertToOneOfMany(bounds=[0, 1])                  #---
+
+
+	tstdata = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(tstdt)):
+		tstdata.addSample(tstdt[i][1:], [tstdt[i][0]])
+	tstdata._convertToOneOfMany(bounds=[0, 1])                   #---
+
+	trdata1 = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt1)):
+		trdata1.addSample(trdt1[i][1:], [trdt1[i][0]])
+	trdata1._convertToOneOfMany(bounds=[0, 1])                      #---
+
+	trdata2 = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt2)):
+		trdata2.addSample(trdt2[i][1:], [trdt2[i][0]])
+	trdata2._convertToOneOfMany(bounds=[0, 1])                      #---
+
+	trdata3 = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt3)):
+		trdata3.addSample(trdt3[i][1:], [trdt3[i][0]])
+	trdata3._convertToOneOfMany(bounds=[0, 1])                      #---
+
+	trdata4 = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt4)):
+		trdata4.addSample(trdt4[i][1:], [trdt4[i][0]])
+	trdata4._convertToOneOfMany(bounds=[0, 1])                      #---
+
+	trdata5 = ClassificationDataSet(7,1, nb_classes=4)
+	for i in xrange(len(trdt5)):
+		trdata5.addSample(trdt5[i][1:], [trdt5[i][0]])
+	trdata5._convertToOneOfMany(bounds=[0, 1])                      #---
+
+	#---------------------------------
+	print "compatible data set made "
+
+
+	# convert cluster data set to compatible pybrain data set
+	compatible_clusters=[]
+
+	for cluster in clusters:
+		ds = ClassificationDataSet(7,1, nb_classes=4)
+		for i in xrange(len(cluster)):
+			a=cluster[i][1:]
+			b=[cluster[i][0]]
+			ds.appendLinked(a,b)
+		ds._convertToOneOfMany(bounds=[0, 1])
+
+		compatible_clusters.append(ds)
+	#-------------------
+
+	print "compatible clusters made"
+
+	# make feed forward neural networks----
+	 
+
+	fnn1 = buildNetwork( trdata1.indim, 5 , trdata1.outdim, outclass=SoftmaxLayer )
+	trainer1 = BackpropTrainer( fnn1, dataset=trdata1, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01) 
+	print trdata1.calculateStatistics()
+
+	fnn2 = buildNetwork( trdata2.indim, 2 , trdata2.outdim, outclass=SoftmaxLayer )
+	trainer2 = BackpropTrainer( fnn2, dataset=trdata2, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+	print trdata2.calculateStatistics()
+
+	fnn3 = buildNetwork( trdata3.indim, 4 , trdata3.outdim, outclass=SoftmaxLayer )
+	trainer3 = BackpropTrainer( fnn3, dataset=trdata3, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+	print trdata3.calculateStatistics()
+
+	fnn4 = buildNetwork( trdata4.indim, 4 , trdata4.outdim, outclass=SoftmaxLayer )
+	trainer4 = BackpropTrainer( fnn4, dataset=trdata4, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+	print trdata4.calculateStatistics()
+
+	fnn5 = buildNetwork( trdata5.indim, 10 , trdata5.outdim, outclass=SoftmaxLayer )
+	trainer5 = BackpropTrainer( fnn5, dataset=trdata5, momentum=0.1, learningrate=0.01 , verbose=True, weightdecay=0.01)
+	print trdata5.calculateStatistics()
+
+	#-----
+
+	print "neural networks made"
+
+
+	# train networks-----
+
+	for i,trainer in enumerate((trainer1,trainer2,trainer3,trainer4,trainer5)):
+		
+		print "training network ", i, " ------------------------------------"
+		trainer.trainEpochs (n_epochs)
+
+	#-----------
+
+	error1=[]
+	error2=[]
+	error3=[]
+	error4=[]
+	error5=[]
+
+	for error,fnn in [ [error1,fnn1],[error2,fnn2],[error3,fnn3],[error4,fnn4],[error5,fnn5]]:
+		for ds in compatible_clusters:
+			out1 = np.array( fnn.activateOnDataset(ds).argmax(axis=1) ) 
+			out = np.array(  ds['target'].argmax(axis=1))
+			P_error = ( float(np.array(out1!=out).sum())/len(out) )*100
+
+			error.append( P_error ) 
+
+
+	for error in [error1,error2,error3,error4,error5]:
+		error=np.array(error)
+
+	error_on_clusters=np.c_[error1,error2,error3,error4,error5]
+
+	# compute weights on each cluster
+
+	print "len error =", len(error)
+
+	weights=[]
+
+	for row in error_on_clusters:
+		deno= ( (1.0/(row[0]+0.1))+(1.0/(row[1]+0.1))+(1.0/(row[2]+0.1))+(1.0/(row[3]+0.1))+(1.0/(row[4]+0.1))    )
+		n1,n2,n3,n4,n5 = (1.0/(row[0]+0.1)),(1.0/(row[1]+0.1)),(1.0/(row[2]+0.1)),(1.0/(row[3]+0.1)),(1.0/(row[4]+0.1))
+		weights.append([ n1/deno, n2/deno, n3/deno, n4/deno, n5/deno ])
+
+	weights=np.array(weights)
+
+	insample1=[]
+	insample2=[]
+	insample3=[]
+	insample4=[]
+	insample5=[]
+	i=1
+	#computing insample error (trdata) for each of the networks
+	for  insample,fnn in [ [insample1,fnn1],[insample2,fnn2],[insample3,fnn3],[insample4,fnn4],[insample5,fnn5] ]:
+		out1 = np.array( fnn.activateOnDataset(trdata).argmax(axis=1) ) 
+		out = np.array(  trdata['target'].argmax(axis=1))
 		P_error = ( float(np.array(out1!=out).sum())/len(out) )*100
+		insample.append( P_error )
+		print "insample error for ", i, '=', insample
+		i+=1
 
-		error.append( P_error ) 
+	insample_error=np.array( [ insample1[0],insample2[0],insample3[0],insample4[0],insample5[0]] )	
 
+	#-----------
 
-for error in [error1,error2,error3,error4,error5]:
-	error=np.array(error)
-
-error=np.c_[error1,error2,error3,error4,error5]
-
-# compute weights on each cluster
-
-print "len error =", len(error)
-
-weights=[]
-
-for row in error:
-	deno= ( (1.0/(row[0]+0.1))+(1.0/(row[1]+0.1))+(1.0/(row[2]+0.1))+(1.0/(row[3]+0.1))+(1.0/(row[4]+0.1))    )
-	n1,n2,n3,n4,n5 = (1.0/(row[0]+0.1)),(1.0/(row[1]+0.1)),(1.0/(row[2]+0.1)),(1.0/(row[3]+0.1)),(1.0/(row[4]+0.1))
-	weights.append([ n1/deno, n2/deno, n3/deno, n4/deno, n5/deno ])
-
-weights=np.array(weights)
-
-for row in weights:
-	print row, row.sum()
+	#computing outsample error tstdata for each of the networks
 
 
+	outsample1=[]
+	outsample2=[]
+	outsample3=[]
+	outsample4=[]
+	outsample5=[]
+	i=1
 
-insample1=[]
-insample2=[]
-insample3=[]
-insample4=[]
-insample5=[]
-i=1
-#computing insample error (trdata) for each of the networks
-for  insample,fnn in [ [insample1,fnn1],[insample2,fnn2],[insample3,fnn3],[insample4,fnn4],[insample5,fnn5] ]:
-	out1 = np.array( fnn.activateOnDataset(trdata).argmax(axis=1) ) 
-	out = np.array(  trdata['target'].argmax(axis=1))
-	P_error = ( float(np.array(out1!=out).sum())/len(out) )*100
-	insample.append( P_error )
-	print "insample error for ", i, '=', insample
-	i+=1
+	for outsample,fnn in  [ [outsample1,fnn1],[outsample2,fnn2],[outsample3,fnn3],[outsample4,fnn4],[outsample5,fnn5] ] :
+		out1 = np.array( fnn.activateOnDataset(tstdata).argmax(axis=1) ) 
+		out = np.array(  tstdata['target'].argmax(axis=1))
+		P_error = ( float(np.array(out1!=out).sum())/len(out) )*100
+		outsample.append( P_error )
+		print "outsample error for ", i, '=', outsample
+		i+=1
+
+	outsample_error=np.array( [ outsample1[0],outsample2[0],outsample3[0],outsample4[0],outsample5[0]] )	
+
+	return (kmeans,
+			compatible_clusters,
+			trdata,
+			tstdata,
+			{'fnn':fnn1,'trainer':trainer1,'trdata':trdata1},
+			{'fnn':fnn2,'trainer':trainer2,'trdata':trdata2},
+			{'fnn':fnn3,'trainer':trainer3,'trdata':trdata3},
+			{'fnn':fnn4,'trainer':trainer4,'trdata':trdata4},
+			{'fnn':fnn5,'trainer':trainer5,'trdata':trdata5},
+			weights,
+			insample_error,
+			outsample_error)
+
+kmeans,compatible_clusters,train_data,tst_data,est1,est2,est3,est4,est5,weights,insample_error,outsample_error = makeEnsembles(raw_data=my_raw_data, num_clusters= len(my_raw_data)/10, tr_ratio=0.3, nn_ratio=0.1 ,n_epochs=3)
 
 
-#-----------
-
-#computing outsample error tstdata for each of the networks
 
 
-outsample1=[]
-outsample2=[]
-outsample3=[]
-outsample4=[]
-outsample5=[]
-i=1
 
-for outsample,fnn in  [ [outsample1,fnn1],[outsample2,fnn2],[outsample3,fnn3],[outsample4,fnn4],[outsample5,fnn5] ] :
-	out1 = np.array( fnn.activateOnDataset(tstdata).argmax(axis=1) ) 
-	out = np.array(  tstdata['target'].argmax(axis=1))
-	P_error = ( float(np.array(out1!=out).sum())/len(out) )*100
-	outsample.append( P_error )
-	print "outsample error for ", i, '=', outsample
-	i+=1
 
-#----------
+
+
+
+
+
+
 
 
 
