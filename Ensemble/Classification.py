@@ -170,8 +170,8 @@ def makeEnsembles(raw_data,num_clusters,tr_ratio,nn_ratio,n_epochs=3):
 	weights=[]
 
 	for row in error_on_clusters:
-		deno= ( (1.0/(row[0]+0.1))+(1.0/(row[1]+0.1))+(1.0/(row[2]+0.1))+(1.0/(row[3]+0.1))+(1.0/(row[4]+0.1))    )
-		n1,n2,n3,n4,n5 = (1.0/(row[0]+0.1)),(1.0/(row[1]+0.1)),(1.0/(row[2]+0.1)),(1.0/(row[3]+0.1)),(1.0/(row[4]+0.1))
+		deno= ( (1.0/(row[0]+0.01))+(1.0/(row[1]+0.01))+(1.0/(row[2]+0.01))+(1.0/(row[3]+0.01))+(1.0/(row[4]+0.01))    )
+		n1,n2,n3,n4,n5 = (1.0/(row[0]+0.01)),(1.0/(row[1]+0.01)),(1.0/(row[2]+0.01)),(1.0/(row[3]+0.01)),(1.0/(row[4]+0.01))
 		weights.append([ n1/deno, n2/deno, n3/deno, n4/deno, n5/deno ])
 
 	weights=np.array(weights)
@@ -232,7 +232,7 @@ def cal_ensemble_error(raw_data,num_clusters,tr_ratio,epochs):
 
 	my_raw_data=raw_data
 	
-	kmeans,compatible_clusters,train_data,tst_data,est1,est2,est3,est4,est5,weights,insample_error,outsample_error = makeEnsembles(raw_data=my_raw_data, num_clusters= num_clusters, tr_ratio=tr_ratio, nn_ratio=0.2 ,n_epochs=epochs)
+	kmeans,compatible_clusters,train_data,tst_data,est1,est2,est3,est4,est5,weights,insample_error,outsample_error = makeEnsembles(raw_data=my_raw_data, num_clusters= num_clusters, tr_ratio=tr_ratio, nn_ratio=0.45 ,n_epochs=epochs)
 
 	tr_out=[]
 	tst_out=[]
@@ -296,13 +296,11 @@ def cal_ensemble_error(raw_data,num_clusters,tr_ratio,epochs):
 	avg_insample_error = np.average(insample_error)
 	avg_outsample_error= np.average(outsample_error)
 	
-	insample_error= in_sample_error 
-	outsample_error= out_sample_error
 	
-	return (avg_insample_error,avg_outsample_error,insample_error,outsample_error)
+	return (avg_insample_error,avg_outsample_error,in_sample_error,out_sample_error)
 
 
-data2,target=make_blobs(n_samples=4500,n_features=7,centers=4,shuffle=True,cluster_std=5.0)
+data2,target=make_blobs(n_samples=2000,n_features=7,centers=4,shuffle=True,cluster_std=3)
 data2=np.array(data2)
 target=np.array(target)
 my_raw_data=np.concatenate((target.reshape(target.shape[0],1),data2),axis=1)
@@ -311,8 +309,8 @@ my_raw_data=np.concatenate((target.reshape(target.shape[0],1),data2),axis=1)
 #tr_ratio  =[0.1,0.8]  
 
 
-n_clusters=[ int(4500.0/30),int(4500.0/40),int(4500.0/50),int(4500.0/60),int(4500.0/70),int(4500.0/80)  ]
-tr_ratio  =[0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55]  
+n_clusters=[ int(4500.0/30),int(4500.0/40),int(4500.0/50),int(4500.0/60),int(4500.0/70),int(4500.0/80),int(4500.0/90),int(4500.0/100)  ]
+tr_ratio  =[0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.8]  
 
 avg_In_1=[]
 avg_Out_1=[]
@@ -325,16 +323,16 @@ In_2=[]
 Out_2=[]
 
 for num_clus in n_clusters:
-	a_in,a_out,In,out = cal_ensemble_error(raw_data=my_raw_data,num_clusters=num_clus,tr_ratio=0.5,epochs=3)
+	a_in,a_out,In,out = cal_ensemble_error(raw_data=my_raw_data,num_clusters=num_clus,tr_ratio=0.5,epochs=10)
 	avg_In_1.append(a_in)
 	avg_Out_1.append(a_out)
 	In_1.append(In)
 	Out_1.append(out)
 
-now_num_clus= n_clusters[np.argmin(np.array(Out_1))]
+now_num_clus= n_clusters[np.argmax(np.array(avg_Out_1))]
 
 for trRatio in tr_ratio:
-	a_in,a_out,In,out = cal_ensemble_error(raw_data=my_raw_data,num_clusters=now_num_clus,tr_ratio=trRatio,epochs=3)
+	a_in,a_out,In,out = cal_ensemble_error(raw_data=my_raw_data,num_clusters=now_num_clus,tr_ratio=trRatio,epochs=10)
 	avg_In_2.append(a_in)
 	avg_Out_2.append(a_out)
 	In_2.append(In)
@@ -352,21 +350,21 @@ print Out_2
 
 
 plt.subplot(1,2,1)
-plt.plot(n_clusters, avg_In_1, 'r--', label="average insample error of individual networks" )
-plt.plot(n_clusters, avg_Out_1,'r--', label="average outsample error of individual networks" )
-plt.plot(n_clusters, In_1, label="insample error of ensemble networks" )
-plt.plot(n_clusters, Out_1, label="outsample error of ensemble networks" )
+plt.plot(n_clusters, avg_In_1, 'r--',color='r', label="average insample error of individual networks" ,linewidth=2.0)
+plt.plot(n_clusters, avg_Out_1,'r--',color='k', label="average outsample error of individual networks",linewidth=2.0 )
+plt.plot(n_clusters, In_1, label="insample error of ensemble networks",linewidth=2.0 )
+plt.plot(n_clusters, Out_1, label="outsample error of ensemble networks",linewidth=2.0 )
 plt.xlim(np.array(n_clusters).min(), np.array(n_clusters).max())
 plt.ylim(0, 60)
 plt.legend()
-plt.xticks(( np.arange(np.array(n_clusters).min(), np.array(n_clusters).max(),5) ))
-plt.yticks((np.arange(0,70,10)))
+plt.xticks(( np.arange(np.array(n_clusters).min(), np.array(n_clusters).max(),15) ))
+plt.yticks((np.arange(0,30,2)))
 plt.title("Training Ratio (= 0.5) vs Number of Clusters ")
 
 
 plt.subplot(1,2,2)
-plt.plot(tr_ratio, avg_In_2,'r--', label="average insample error of individual networks" )
-plt.plot(tr_ratio, avg_Out_2,'r--',label="average outsample error of individual networks" )
+plt.plot(tr_ratio, avg_In_2,'r--',color='r', label="average insample error of individual networks",linewidth=2.0 )
+plt.plot(tr_ratio, avg_Out_2,'r--',color='k',label="average outsample error of individual networks" ,linewidth=2.0)
 plt.plot(tr_ratio, In_2, label="insample error of ensemble networks" )
 plt.plot(tr_ratio, Out_2, label="outsample error of ensemble networks" )
 plt.xlim(np.array(tr_ratio).min(), np.array(tr_ratio).max()+0.02)
